@@ -38,29 +38,42 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-let bird = {
-    x: 80,
-    y: 300,
-    radius: 15,
-    velocity: 0,
-    gravity: 0.3,
-    lift: -6
-};
+let bird, pipes, frame, score, gameOver;
 
-let pipes = [];
-let frame = 0;
-let score = 0;
-let gameOver = false;
+function resetGame() {
+    bird = {
+        x: 80,
+        y: 300,
+        radius: 15,
+        velocity: 0,
+        gravity: 0.3,
+        lift: -6
+    };
+
+    pipes = [];
+    frame = 0;
+    score = 0;
+    gameOver = false;
+}
+
+resetGame();
 
 // Controls
 document.addEventListener("keydown", e => {
-    if (e.code === "Space") bird.velocity = bird.lift;
+    if (e.code === "Space") {
+        if (gameOver) resetGame();
+        bird.velocity = bird.lift;
+    }
 });
-canvas.addEventListener("click", () => bird.velocity = bird.lift);
+
+canvas.addEventListener("click", () => {
+    if (gameOver) resetGame();
+    bird.velocity = bird.lift;
+});
 
 // Create pipes
 function addPipe() {
-    let gap = 200; // VERY EASY large gap
+    let gap = 200; // very easy gap
     let topHeight = Math.random() * 200 + 50;
     pipes.push({
         x: canvas.width,
@@ -116,7 +129,6 @@ function update() {
         if (pipe.x + pipe.width === bird.x) score++;
     });
 
-    // Ground & sky collision
     if (bird.y > canvas.height || bird.y < 0) {
         gameOver = true;
     }
@@ -124,24 +136,24 @@ function update() {
     pipes = pipes.filter(pipe => pipe.x + pipe.width > 0);
 }
 
-// Draw score
+// Score
 function drawScore() {
     ctx.fillStyle = "#333";
     ctx.font = "22px Arial";
     ctx.fillText("Score: " + score, 20, 40);
 }
 
-// Game Over screen
+// Game Over Screen
 function drawGameOver() {
     ctx.fillStyle = "rgba(0,0,0,0.5)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = "#fff";
     ctx.font = "32px Arial";
-    ctx.fillText("Game Over", 110, 280);
+    ctx.fillText("Game Over", 110, 270);
 
     ctx.font = "18px Arial";
-    ctx.fillText("Refresh to Play Again", 105, 320);
+    ctx.fillText("Click or Press SPACE to Restart", 60, 310);
 }
 
 // Main loop
@@ -159,6 +171,7 @@ function loop() {
 
 loop();
 </script>
+
 
 </body>
 </html>
