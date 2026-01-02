@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Catch the Box Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f4f4f4;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    #gameArea {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      margin: 20px auto;
+      background: white;
+      border: 2px solid #333;
+      overflow: hidden;
+    }
+
+    #box {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: #ff5252;
+      cursor: pointer;
+      display: none;
+    }
+
+    #info {
+      font-size: 18px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎯 Catch the Box</h1>
+  <div id="info">
+    Score: <span id="score">0</span> |
+    Time Left: <span id="time">30</span>s
+  </div>
+
+  <button onclick="startGame()">Start Game</button>
+
+  <div id="gameArea">
+    <div id="box"></div>
+  </div>
+
+  <script>
+    const box = document.getElementById("box");
+    const gameArea = document.getElementById("gameArea");
+    const scoreDisplay = document.getElementById("score");
+    const timeDisplay = document.getElementById("time");
+
+    let score = 0;
+    let timeLeft = 30;
+    let gameTimer;
+
+    function randomPosition() {
+      const maxX = gameArea.clientWidth - box.clientWidth;
+      const maxY = gameArea.clientHeight - box.clientHeight;
+
+      const x = Math.random() * maxX;
+      const y = Math.random() * maxY;
+
+      box.style.left = x + "px";
+      box.style.top = y + "px";
+    }
+
+    function startGame() {
+      score = 0;
+      timeLeft = 30;
+      scoreDisplay.textContent = score;
+      timeDisplay.textContent = timeLeft;
+      box.style.display = "block";
+
+      randomPosition();
+
+      gameTimer = setInterval(() => {
+        timeLeft--;
+        timeDisplay.textContent = timeLeft;
+
+        if (timeLeft === 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      clearInterval(gameTimer);
+      box.style.display = "none";
+      alert("Game Over! Your score: " + score);
+    }
+
+    box.addEventListener("click", () => {
+      score++;
+      scoreDisplay.textContent = score;
+      randomPosition();
+    });
+  </script>
+
+</body>
+</html>
