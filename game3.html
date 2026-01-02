@@ -1,81 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Tic Tac Toe vs Computer</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
+<meta charset="UTF-8">
+<title>Tic Tac Toe vs Computer</title>
 
-    h1 {
-      margin-bottom: 10px;
-    }
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
 
-    #status {
-      margin-bottom: 15px;
-      font-size: 18px;
-    }
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  gap: 5px;
+}
 
-    .board {
-      display: grid;
-      grid-template-columns: repeat(3, 100px);
-      grid-template-rows: repeat(3, 100px);
-      gap: 5px;
-    }
+.cell {
+  width: 100px;
+  height: 100px;
+  background: white;
+  border: 2px solid #333;
+  font-size: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
 
-    .cell {
-      background: white;
-      border: 2px solid #333;
-      font-size: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
+#status {
+  margin: 15px;
+  font-size: 18px;
+}
 
-    .cell:hover {
-      background: #e6e6e6;
-    }
-
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-  </style>
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+}
+</style>
 </head>
+
 <body>
 
-<h1>❌⭕ Tic Tac Toe</h1>
+<h1>Tic Tac Toe</h1>
 <div id="status">Your turn (X)</div>
 
-<div class="board">
-  <div class="cell"></div>
-  <div class="cell"></div>
-  <div class="cell"></div>
-  <div class="cell"></div>
-  <div class="cell"></div>
-  <div class="cell"></div>
-  <div class="cell"></div>
-  <div class="cell"></div>
-  <div class="cell"></div>
+<div class="board" id="board">
+  <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+  <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+  <div class="cell"></div><div class="cell"></div><div class="cell"></div>
 </div>
 
 <button onclick="restartGame()">Restart</button>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
   const cells = document.querySelectorAll(".cell");
   const statusText = document.getElementById("status");
 
-  let board = ["", "", "", "", "", "", "", "", ""];
+  let board = ["","","","","","","","",""];
   let gameActive = true;
 
   const player = "X";
@@ -92,6 +81,83 @@
   });
 
   function playerMove(index) {
-    if (board[index] !== "" || !gameActive) return;
+    if (board[index] || !gameActive) return;
 
-    board[i]()
+    board[index] = player;
+    cells[index].textContent = player;
+
+    if (checkWinner(player)) {
+      statusText.textContent = "🎉 You win!";
+      gameActive = false;
+      return;
+    }
+
+    if (!board.includes("")) {
+      statusText.textContent = "😐 Draw!";
+      gameActive = false;
+      return;
+    }
+
+    statusText.textContent = "Computer thinking...";
+    setTimeout(computerMove, 400);
+  }
+
+  function computerMove() {
+    let move = findBestMove(computer) ||
+               findBestMove(player) ||
+               randomMove();
+
+    board[move] = computer;
+    cells[move].textContent = computer;
+
+    if (checkWinner(computer)) {
+      statusText.textContent = "💻 Computer wins!";
+      gameActive = false;
+      return;
+    }
+
+    if (!board.includes("")) {
+      statusText.textContent = "😐 Draw!";
+      gameActive = false;
+      return;
+    }
+
+    statusText.textContent = "Your turn (X)";
+  }
+
+  function findBestMove(current) {
+    for (let combo of winConditions) {
+      let values = combo.map(i => board[i]);
+      if (values.filter(v => v === current).length === 2 &&
+          values.includes("")) {
+        return combo[values.indexOf("")];
+      }
+    }
+    return null;
+  }
+
+  function randomMove() {
+    let empty = board
+      .map((v,i) => v === "" ? i : null)
+      .filter(v => v !== null);
+    return empty[Math.floor(Math.random() * empty.length)];
+  }
+
+  function checkWinner(player) {
+    return winConditions.some(combo =>
+      combo.every(i => board[i] === player)
+    );
+  }
+
+  window.restartGame = function() {
+    board = ["","","","","","","","",""];
+    cells.forEach(c => c.textContent = "");
+    gameActive = true;
+    statusText.textContent = "Your turn (X)";
+  };
+
+});
+</script>
+
+</body>
+</html>
