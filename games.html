@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Flappy Bird Clone</title>
+  <title>Flappy Modi</title>
   <style>
     body {
       margin: 0;
@@ -15,50 +15,89 @@
     }
 
     canvas {
-      background: #70c5ce;
       border: 2px solid #000;
+      background: #70c5ce;
     }
 
-    #info {
+    #hint {
       position: absolute;
-      top: 20px;
-      color: #fff;
-      font-size: 24px;
-      text-shadow: 1px 1px 2px #000;
+      top: 15px;
+      color: white;
+      font-size: 20px;
+      text-shadow: 1px 1px 2px black;
     }
   </style>
 </head>
 <body>
 
-<div id="info">Click or Press Space to Jump</div>
+<div id="hint">Click or Press Space to Jump</div>
 <canvas id="game" width="400" height="500"></canvas>
 
 <script>
   const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d");
 
-  // Bird
-  let bird = {
+  // Load Modi Image
+  const modiImg = new Image();
+  modiImg.src = "modi.png";
+
+  // Modi character (easy settings)
+  let modi = {
     x: 80,
     y: 200,
-    width: 30,
-    height: 30,
-    gravity: 0.5,
-    lift: -8,
+    width: 50,
+    height: 50,
+    gravity: 0.3,   // slower fall
+    lift: -7,       // gentle jump
     velocity: 0
   };
 
-  // Pipes
   let pipes = [];
-  let pipeWidth = 50;
-  let pipeGap = 140;
+  let pipeWidth = 55;
+  let pipeGap = 180; // BIG GAP (easy)
   let frame = 0;
   let score = 0;
   let gameOver = false;
 
-  function drawBird() {
-    ctx.fillStyle = "yellow";
-    ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+  function drawModi() {
+    ctx.drawImage(modiImg, modi.x, modi.y, modi.width, modi.height);
+  }
+
+  function updateModi() {
+    modi.velocity += modi.gravity;
+    modi.y += modi.velocity;
+
+    if (modi.y < 0 || modi.y + modi.height > canvas.height) {
+      gameOver = true;
+    }
+  }
+
+  function updatePipes() {
+    if (frame % 110 === 0) { // slower pipes
+      let top = Math.random() * 180 + 40;
+      pipes.push({ x: canvas.width, top });
+    }
+
+    pipes.forEach(pipe => {
+      pipe.x -= 1.5; // slower speed
+
+      // Collision
+      if (
+        modi.x < pipe.x + pipeWidth &&
+        modi.x + modi.width > pipe.x &&
+        (modi.y < pipe.top ||
+         modi.y + modi.height > pipe.top + pipeGap)
+      ) {
+        gameOver = true;
+      }
+
+      // Score
+      if (pipe.x + pipeWidth === modi.x) {
+        score++;
+      }
+    });
+
+    pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
   }
 
   function drawPipes() {
@@ -69,66 +108,37 @@
     });
   }
 
-  function updatePipes() {
-    if (frame % 90 === 0) {
-      let top = Math.random() * 200 + 50;
-      pipes.push({ x: canvas.width, top: top });
-    }
-
-    pipes.forEach(pipe => {
-      pipe.x -= 2;
-
-      // Score
-      if (pipe.x + pipeWidth === bird.x) {
-        score++;
-      }
-
-      // Collision
-      if (
-        bird.x < pipe.x + pipeWidth &&
-        bird.x + bird.width > pipe.x &&
-        (bird.y < pipe.top ||
-         bird.y + bird.height > pipe.top + pipeGap)
-      ) {
-        gameOver = true;
-      }
-    });
-
-    pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
-  }
-
-  function updateBird() {
-    bird.velocity += bird.gravity;
-    bird.y += bird.velocity;
-
-    if (bird.y + bird.height > canvas.height || bird.y < 0) {
-      gameOver = true;
-    }
-  }
-
   function drawScore() {
     ctx.fillStyle = "#fff";
-    ctx.font = "24px Arial";
+    ctx.font = "22px Arial";
     ctx.fillText("Score: " + score, 10, 30);
   }
 
   function resetGame() {
-    bird.y = 200;
-    bird.velocity = 0;
+    modi.y = 200;
+    modi.velocity = 0;
     pipes = [];
     score = 0;
     frame = 0;
     gameOver = false;
   }
 
+  function jump() {
+    if (gameOver) {
+      resetGame();
+      loop();
+    }
+    modi.velocity = modi.lift;
+  }
+
   function loop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (!gameOver) {
-      updateBird();
+      updateModi();
       updatePipes();
-      drawBird();
       drawPipes();
+      drawModi();
       drawScore();
       frame++;
       requestAnimationFrame(loop);
@@ -137,23 +147,14 @@
       ctx.font = "30px Arial";
       ctx.fillText("Game Over", 120, 220);
       ctx.font = "18px Arial";
-      ctx.fillText("Click or Press Space to Restart", 70, 260);
+      ctx.fillText("Click or Space to Restart", 85, 260);
     }
   }
 
-  function jump() {
-    if (gameOver) {
-      resetGame();
-      loop();
-    }
-    bird.velocity = bird.lift;
-  }
-
+  document.addEventListener("click", jump);
   document.addEventListener("keydown", e => {
     if (e.code === "Space") jump();
   });
-
-  document.addEventListener("click", jump);
 
   loop();
 </script>
